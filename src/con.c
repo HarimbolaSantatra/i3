@@ -1,7 +1,7 @@
 /*
  * vim:ts=4:sw=4:expandtab
  *
- * i3 - an improved dynamic tiling window manager
+ * i3 - an improved tiling window manager
  * © 2009 Michael Stapelberg and contributors (see also: LICENSE)
  *
  * con.c: Functions which deal with containers directly (creating containers,
@@ -116,14 +116,14 @@ static void _con_attach(Con *con, Con *parent, Con *previous, bool ignore_focus)
                 /* we need to insert the container at the beginning */
                 TAILQ_INSERT_HEAD(nodes_head, con, nodes);
             } else {
-                while (current->num != -1 && con->num > current->num) {
+                while (current->num != -1 && con->num >= current->num) {
                     current = TAILQ_NEXT(current, nodes);
                     if (current == TAILQ_END(nodes_head)) {
                         current = NULL;
                         break;
                     }
                 }
-                /* we need to insert con after current, if current is not NULL */
+                /* we need to insert con before current, if current is not NULL */
                 if (current) {
                     TAILQ_INSERT_BEFORE(current, con, nodes);
                 } else {
@@ -429,20 +429,20 @@ bool con_is_hidden(Con *con) {
 /*
  * Returns true if the container is maximized in the given orientation.
  *
- * If the container is floating or fullscreen, it is not considered maximized.
- * Otherwise, it is maximized if it doesn't share space with any other
- * container in the given orientation. For example, if a workspace contains
- * a single splitv container with three children, none of them are considered
- * vertically maximized, but they are all considered horizontally maximized.
+ * If the container is floating, it is not considered maximized. Otherwise, it
+ * is maximized if it doesn't share space with any other container in the given
+ * orientation. For example, if a workspace contains a single splitv container
+ * with three children, none of them are considered vertically maximized, but
+ * they are all considered horizontally maximized.
  *
  * Passing "maximized" hints to the application can help it make the right
  * choices about how to draw its borders. See discussion in
  * https://github.com/i3/i3/pull/2380.
  */
 bool con_is_maximized(Con *con, orientation_t orientation) {
-    /* Fullscreen containers are not considered maximized. */
+    /* Fullscreen containers are considered maximized. */
     if (con->fullscreen_mode != CF_NONE) {
-        return false;
+        return true;
     }
 
     /* Look up the container layout which corresponds to the given
